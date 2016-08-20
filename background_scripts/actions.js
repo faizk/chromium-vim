@@ -696,7 +696,10 @@ Actions = (function() {
   };
 
   _.getBuffers = function(o) {
-    chrome.tabs.query({}, function(tabs) {
+    var queryInfo = {
+      currentWindow: true
+    }
+    chrome.tabs.query(queryInfo, function(tabs) {
       o.callback({
         type: 'buffers',
         buffers: tabs.map(function(e, i) {
