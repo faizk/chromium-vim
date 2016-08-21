@@ -50,7 +50,12 @@ Command.setupFrameElements = function() {
   this.bar = document.createElement('div');
   this.bar.id = 'cVim-command-bar';
   this.bar.cVim = true;
-  this.bar.style[(this.onBottom) ? 'bottom' : 'top'] = '0';
+  this.statusBarHeight = parseInt(getComputedStyle(this.statusBar).height, 10);
+  if (this.onBottom) {
+    this.bar.style['bottom'] = this.statusBarHeight + 'px';
+  } else {
+    this.bar.style['top'] = '0'
+  }
   this.modeIdentifier = document.createElement('span');
   this.modeIdentifier.id = 'cVim-command-bar-mode';
   this.modeIdentifier.cVim = true;
@@ -75,7 +80,7 @@ Command.setupFrameElements = function() {
     if (this.onBottom) {
       this.barPaddingTop = 0;
       this.barPaddingBottom = this.barHeight;
-      this.data.style.bottom = this.barHeight + 'px';
+      this.data.style.bottom = (this.statusBarHeight + this.barHeight) + 'px';
     } else {
       this.barPaddingBottom = 0;
       this.barPaddingTop = this.barHeight;
@@ -90,6 +95,7 @@ Command.setup = function() {
   this.input.id = 'cVim-command-bar-input';
   this.input.cVim = true;
   this.statusBar = document.createElement('div');
+  this.statusBar.innerHTML = "status...";
   this.statusBar.id = 'cVim-status-bar';
   this.statusBar.style[(this.onBottom) ? 'bottom' : 'top'] = '0';
   try {
@@ -930,9 +936,7 @@ Command.show = function(search, value, complete) {
     this.input.value = value;
     this.typed = value;
   }
-  if (Status.active) {
-    Status.hide();
-  }
+  Status.setMessage("--NORMAL-- COMMAND MODE", 5);
   this.bar.style.display = 'inline-block';
   setTimeout(function() {
     this.input.focus();
