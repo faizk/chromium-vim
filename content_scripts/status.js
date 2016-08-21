@@ -27,13 +27,19 @@ var Status = {
     Command.statusBar.style.display = 'inline-block';
     this.delay = window.setTimeout(function() {
       if (Status.active === true) {
-        Command.statusBar.style.display = 'none';
-        Status.active = false;
+        Status.hide();
       }
     }, timeout * 1000);
   },
   hide: function() {
-    Command.statusBar.style.display = 'none';
+    if (Command.onBottom) {
+      Command.statusBar.textContent = '';
+      Command.statusBar.appendChild(document.createTextNode('no news is good news!'));
+      Command.statusBar.normalize();
+      Command.statusBar.style.display = 'inline-block';
+    } else {
+      Command.statusBar.style.display = 'none';
+    }
     this.active = false;
   }
 };
