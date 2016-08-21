@@ -936,7 +936,11 @@ Command.show = function(search, value, complete) {
     this.input.value = value;
     this.typed = value;
   }
-  Status.setMessage("--NORMAL-- COMMAND MODE", 5);
+  if (this.onBottom) {
+    Status.setMessage("--NORMAL-- COMMAND MODE", 5);
+  } else {
+    Status.hide();
+  }
   this.bar.style.display = 'inline-block';
   setTimeout(function() {
     this.input.focus();
