@@ -49,7 +49,7 @@ function getTab(tab, reverse, count, first, last) {
       if (count !== -1 && count !== 1)
         index = Math.min(Math.max(0, index), tabs.length - 1);
       else
-        index = mod(index, tabs.length);
+        index = Utils.trueModulo(index, tabs.length);
       return chrome.tabs.update(tabs[index].id, {active: true});
     }
   });
@@ -155,6 +155,11 @@ var Listeners = {
         chrome.tabs.query({active: true, currentWindow: true}, function(e) {
           return getTab(e[0], false, (command === 'nextTab' ? 1 : -1),
                         false, false);
+        });
+        break;
+      case 'viewSource':
+        chrome.tabs.query({active: true, currentWindow: true}, function(e) {
+          chrome.tabs.create({url: 'view-source:' + e[0].url, index: e[0].index + 1});
         });
         break;
       case 'nextCompletionResult':

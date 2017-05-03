@@ -45,10 +45,9 @@ var Complete = {
   activeEngines: [],
 
   convertToLink: function(input, isURL, isLink) {
-    input = input.replace(/@%/g, document.URL)
-                 .split(/\s+/)
-                 .compress()
-                 .slice(1);
+    input = input.replace(/@%/g, document.URL).split(/\s+/);
+    input = Utils.compressArray(input).slice(1);
+
     if (input.length === 0)
       return '';
 
@@ -60,7 +59,7 @@ var Complete = {
       if (input.length == 0)
 	return engine.baseUrl;
     } else {
-      if (!isLink && (isURL || input.join(' ').validURL())) {
+      if (!isLink && (isURL || Utils.isValidURL(input.join(' ')))) {
         input = input.join(' ');
         return (!/^[a-zA-Z\-]+:/.test(input) ? 'http://' : '') +
           input;
@@ -76,9 +75,9 @@ var Complete = {
     console.log('prefix: ', prefix)
     console.log('suffix: ', suffix)
 
-    if (suffix.validURL())
-      return suffix.convertLink();
-    return prefix.embedString(suffix);
+    if (Utils.isValidURL(suffix))
+      return Utils.toSearchURL(suffix);
+    return Utils.format(prefix, suffix);
   },
 
   setLocale: function(locale) {
@@ -148,7 +147,7 @@ Complete.engines = {
     apiUrl: 'https://www.google.com/complete/search?client=chrome-omni&gs_ri=chrome-ext&oit=1&cp=1&pgcl=7&q=%s',
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(query),
+        url: Utils.format(this.apiUrl, query),
         json: true
       }, function(response) {
         var data = response[1].map(function(e, i) {
@@ -173,7 +172,7 @@ Complete.engines = {
     },
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(query),
+        url: Utils.format(this.apiUrl, query),
         json: true
       }, function(response) {
         callback(response[1]);
@@ -187,7 +186,7 @@ Complete.engines = {
     apiUrl: 'https://www.google.com/s?tbm=map&fp=1&gs_ri=maps&source=hp&suggest=p&authuser=0&hl=en&pf=p&tch=1&ech=2&q=%s',
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(query),
+        url: Utils.format(this.apiUrl, query),
         json: false
       }, function(response) {
         var data = JSON.parse(JSON.parse(JSON.stringify(response.replace(/\/\*[^\*]+\*\//g, '')))).d;
@@ -211,7 +210,7 @@ Complete.engines = {
     apiUrl: 'http://www.google.com/complete/search?client=img&hl=en&gs_rn=43&gs_ri=img&ds=i&cp=1&gs_id=8&q=%s',
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(query),
+        url: Utils.format(this.apiUrl, query),
         json: false
       }, function(response) {
         var data = JSON.parse(JSON.parse(JSON.stringify(response.replace(/\/\*[^\*]+\*\//g, '')))).d;
@@ -235,7 +234,7 @@ Complete.engines = {
     apiUrl: 'http://www.google.com/trends/entitiesQuery?tn=10&q=%s',
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(encodeURIComponent(query)),
+        url: Utils.format(this.apiUrl, encodeURIComponent(query)),
         json: true
       }, function(response) {
         callback(response.entityList.map(function(e) {
@@ -251,7 +250,7 @@ Complete.engines = {
     apiUrl: 'https://www.google.com/finance/match?matchtype=matchall&q=%s',
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(encodeURIComponent(query)),
+        url: Utils.format(this.apiUrl, encodeURIComponent(query)),
         json: true
       }, function(response) {
         callback(response.matches.map(function(e) {
@@ -267,7 +266,7 @@ Complete.engines = {
     apiUrl: 'https://completion.amazon.com/search/complete?method=completion&search-alias=aps&client=amazon-search-ui&mkt=1&q=%s',
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(encodeURIComponent(query)),
+        url: Utils.format(this.apiUrl, encodeURIComponent(query)),
         json: true
       }, function(response) {
         callback(response[1]);
@@ -281,7 +280,7 @@ Complete.engines = {
     apiUrl: 'https://search.yahoo.com/sugg/gossip/gossip-us-ura/?output=sd1&appid=search.yahoo.com&nresults=20&command=%s',
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(encodeURIComponent(query)),
+        url: Utils.format(this.apiUrl, encodeURIComponent(query)),
         json: true
       }, function(response) {
         var _ret = [];
@@ -301,7 +300,7 @@ Complete.engines = {
     apiUrl: 'https://search.yahoo.com/sugg/ss/gossip-us_ss-vertical_ss/?output=sd1&pubid=1307&appid=yanswer&command=%s&nresults=20',
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(encodeURIComponent(query)),
+        url: Utils.format(this.apiUrl, encodeURIComponent(query)),
         json: true
       }, function(response) {
         callback(response.r.map(function(e) {
@@ -320,7 +319,7 @@ Complete.engines = {
     },
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(query),
+        url: Utils.format(this.apiUrl, query),
         json: true
       }, function(response) {
         callback(response[1].map(function(e) {
@@ -336,7 +335,7 @@ Complete.engines = {
     apiUrl: 'https://autosug.ebay.com/autosug?kwd=%s',
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(encodeURIComponent(query)),
+        url: Utils.format(this.apiUrl, encodeURIComponent(query)),
         json: false
       }, function(response) {
         var _ret = JSON.parse(response.replace(/^[^\(]+\(|\)$/g, ''));
@@ -356,7 +355,7 @@ Complete.engines = {
     apiUrl: 'https://clients1.google.com/complete/search?client=youtube&hl=en&gl=us&gs_rn=23&gs_ri=youtube&ds=yt&cp=2&gs_id=d&q=%s',
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(query),
+        url: Utils.format(this.apiUrl, query),
         json: false
       }, function(response) {
         var _ret = JSON.parse(response.replace(/^[^\(]+\(|\)$/g, ''));
@@ -376,7 +375,7 @@ Complete.engines = {
     },
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(encodeURIComponent(query)),
+        url: Utils.format(this.apiUrl, encodeURIComponent(query)),
         json: true
       }, function(response) {
         callback(response.results.map(function(e) {
@@ -392,7 +391,7 @@ Complete.engines = {
     apiUrl: 'http://www.merriam-webster.com/autocomplete?query=%s',
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(encodeURIComponent(query)),
+        url: Utils.format(this.apiUrl, encodeURIComponent(query)),
         json: true
       }, function(response) {
         callback(response.suggestions.map(function(e) {
@@ -411,7 +410,7 @@ Complete.engines = {
     },
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(encodeURIComponent(query)),
+        url: Utils.format(this.apiUrl, encodeURIComponent(query)),
         json: true
       }, function(response) {
         callback(response[1].map(function(e) {
@@ -427,12 +426,11 @@ Complete.engines = {
     apiUrl: 'https://duckduckgo.com/ac/?q=%s',
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(encodeURIComponent(query)),
+        url: Utils.format(this.apiUrl, encodeURIComponent(query)),
         json: true
       }, function(response) {
-        callback(response.map(function(e) {
-          return e.phrase;
-        }).compress());
+        response = response.map(function(e) { return e.phrase; });
+        callback(Utils.compressArray(response));
       });
     }
   },
@@ -443,7 +441,7 @@ Complete.engines = {
     apiUrl: 'http://api.urbandictionary.com/v0/autocomplete?term=%s',
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(encodeURIComponent(query)),
+        url: Utils.format(this.apiUrl, encodeURIComponent(query)),
         json: true
       }, function(response) {
         callback(response.slice(1).map(function(e) {
@@ -483,7 +481,7 @@ Complete.engines = {
     apiUrl: 'https://www.themoviedb.org/search/remote/multi?query=%s&language=en',
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(encodeURIComponent(query)),
+        url: Utils.format(this.apiUrl, encodeURIComponent(query)),
         json: true,
       }, function(response) {
         callback(response.map(function(e) {
@@ -513,7 +511,7 @@ Complete.engines = {
     apiUrl: 'http://suggestion.baidu.com/su?json=1&cb=&wd=',
     queryApi: function(query, callback) {
       httpRequest({
-        url: this.apiUrl.embedString(encodeURIComponent(query)),
+        url: Utils.format(this.apiUrl, encodeURIComponent(query)),
       }, function(response) {
         response = JSON.parse(response.slice(1, -2));
         callback(response.s);
